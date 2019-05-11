@@ -1,67 +1,92 @@
 <template>
-  <v-navigation-drawer
-    v-model="drawer"
-    :mini-variant.sync="mini"
-    hide-overlay
-    stateless
-    right
-    app
-  >
-    <v-toolbar flat class="transparent">
-      <v-list class="pa-0">
-        <v-list-tile avatar>
-          <v-list-tile-avatar>
-            <img src="https://randomuser.me/api/portraits/men/85.jpg" />
-          </v-list-tile-avatar>
+    <div class="text-xs-center" v-show="model != null">
+            <v-card light flat>
+                <v-toolbar dense>
+                    <v-btn icon @click="$emit('deselect')"><v-icon>fas fa-1x fa-arrow-left </v-icon></v-btn>
+                </v-toolbar>
+                <v-list>
+                    <v-list-tile avatar>
+                        <v-list-tile-avatar>
+                            <v-icon class="white darken-2" color="black">fas fa-1x {{model.icon}}</v-icon>
+                        </v-list-tile-avatar>
 
-          <v-list-tile-content>
-            <v-list-tile-title>John Leider</v-list-tile-title>
-          </v-list-tile-content>
+                        <v-list-tile-content>
+                            <v-list-tile-title>{{model.name}}</v-list-tile-title>
+                            <v-list-tile-sub-title>
+                                <v-btn icon color="info" small flat class="pa-0 ma-0">
+                                    <v-icon>fas fa-1x fa-clone</v-icon>
+                                </v-btn>
+                                <v-btn icon color="primary" small flat class="pa-0 ma-0">
+                                    <v-icon>far fa-1x fa-eye</v-icon>
+                                </v-btn>
+                                <v-btn icon color="error" small flat class="pa-0 ma-0">
+                                    <v-icon>fas fa-1x fa-trash</v-icon>
+                                </v-btn>
+                            </v-list-tile-sub-title>
+                        </v-list-tile-content>
 
-          <v-list-tile-action>
-            <v-btn icon @click.stop="mini = !mini">
-              <v-icon>chevron_left</v-icon>
-            </v-btn>
-          </v-list-tile-action>
-        </v-list-tile>
-      </v-list>
-    </v-toolbar>
+                    </v-list-tile>
+                </v-list>
 
-    <v-list class="pt-0" dense>
-      <v-divider></v-divider>
+                <v-divider class="primary"></v-divider>
 
-      <v-list-tile v-for="item in items" :key="item.title">
-        <v-list-tile-action>
-          <v-icon>{{ item.icon }}</v-icon>
-        </v-list-tile-action>
+                <v-list subheader>
+                    <v-subheader>Transform</v-subheader>
+                    <Boolean />
 
-        <v-list-tile-content>
-          <v-list-tile-title>{{ item.title }}</v-list-tile-title>
-        </v-list-tile-content>
-      </v-list-tile>
-    </v-list>
-  </v-navigation-drawer>
+
+                    <v-subheader>Equation</v-subheader>
+                    <LineText @input="change"/>
+                    <Numbers />
+
+                </v-list>
+
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <Button />
+                </v-card-actions>
+            </v-card>
+    </div>
 </template>
 
 <script>
-export default {
-  data: () => ({
-    drawer: true,
-    items: [
-      { title: "Home", icon: "dashboard" },
-      { title: "About", icon: "question_answer" }
-    ],
-    mini: true,
-    right: null
-  }),
 
-  mounted() {
-    this.items = [
-      {
-        name: "Carburator <main>",
-        children: this.items
-      }
-    ];
-  }
-};
+    import Boolean from './inputs/Boolean'
+    import Button from './inputs/Button'
+    import LineText from "./inputs/LineText";
+    import Numbers from "./inputs/Numbers";
+    import Model from "../core/models/Model";
+
+
+    export default {
+        props: {
+            "model": {
+                type: Model,
+                required: false
+            }
+        },
+
+        components: {
+            Numbers,
+            Boolean,
+            Button,
+            LineText
+        },
+
+        data: () => ({
+            fav: true,
+            message: false,
+            hints: true
+        }),
+
+        methods: {
+            change(d) {
+                alert(d);
+            }
+        }
+    }
 </script>
+
+<style scoped>
+
+</style>

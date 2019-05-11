@@ -10,9 +10,7 @@
 
 <script>
 import ModelTree from "./components/ModelTree";
-import Properties from "./components/Properties";
 import Toolbar from "./components/Toolbar";
-import Footer from "./components/Footer";
 import Home from "./views/Home.vue";
 
 import { mapActions } from "vuex";
@@ -82,10 +80,6 @@ html {
 
 .v-icon.v-treeview-node__toggle {
   margin: 5px;
-}
-
-.v-icon {
-  color: #02c64c !important;
 }
 
 .v-treeview-node {

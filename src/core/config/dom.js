@@ -6,29 +6,25 @@ export default {
         {
           type: "card",
           icon: "far fa-home",
-          text: "Extruded Boss / Base"
+          text: "Graph",
+          key: "Graph"
         },
         {
           type: "card",
           icon: "far fa-home",
-          text: "Swept Boss / Base"
+          text: "Media"
         },
         {
           type: "group",
           items: [
-            { icon: "far fa-home", text: "Extruded Boss / Base" },
-            { icon: "far fa-home", text: "Extruded Boss / Base" },
-            { icon: "far fa-home", text: "Extruded Boss / Base" }
+            { icon: "far fa-home", text: "Math Expression" },
+            { icon: "far fa-home", text: "Shape / Polygon" },
+            { icon: "far fa-home", text: "Text / Paragraph" }
           ]
         },
         {
           type: "divider"
-        }
-      ]
-    },
-    {
-      name: "Shapes",
-      content: [
+        },
         {
           type: "card",
           icon: "far fa-home",
@@ -46,8 +42,22 @@ export default {
           type: "group",
           items: [
             { icon: "far fa-home", text: "Cone" },
-            { icon: "far fa-home", text: "Cylinder" }
+            { icon: "far fa-home", text: "Cylinder" },
+            { icon: "far fa-home", text: "Surface" }
           ]
+        },
+        {
+          type: "divider"
+        }
+      ]
+    },
+    {
+      name: "Animation",
+      content: [
+        {
+          type: "card",
+          icon: "far fa-home",
+          text: "Interpolator"
         },
         {
           type: "divider"

@@ -1,25 +1,81 @@
+import * as THREE from "three";
+
 export default class Model {
-  static __count = 0;
 
-  constructor() {}
+    static _count = 0;
 
-  get icon() {
-    return "far fa-empty";
-  }
+    constructor(opts) {
+        /**
+         *
+         * @type {*|string}
+         * @private
+         */
+        this._icon = opts.icon || "far fa-empty";
+        /**
+         *
+         * @type {*|string}
+         * @private
+         */
+        this._type = opts.type || "Model";
+        /**
+         *
+         * @type {*|string}
+         * @private
+         */
+        this._name = opts.name || `${this.type} ${++Model._count}`;
+        /**
+         *
+         * @type {Mesh}
+         * @private
+         */
+        this._mesh = this.generateMesh();
 
-  get type() {
-    return "Undefined";
-  }
+        /**
+         *
+         * @type {{name: string}[]}
+         */
+        this.props = [
+            {
+                name: "Transform"
+            }
+        ];
+    }
 
-  get name() {
-    return "Undefined";
-  }
+    /**
+     * @method generateMesh
+     * @returns {Mesh}
+     */
+    generateMesh() {
+        return new THREE.Mesh(
+            new THREE.BoxGeometry(50, 50, 50),
+            new THREE.MeshBasicMaterial({
+                color: 0xff0000
+            })
+        );
+    }
 
-  static get count() {
-    return this.__count;
-  }
+    onPropUpdate() {
 
-  static set count(value) {
-    this.__count = value;
-  }
+    }
+
+    get icon() {
+        return this._icon;
+    }
+
+    get type() {
+        return this._type;
+    }
+
+    get name() {
+        return this._name;
+    }
+
+    static get count() {
+        return this._count;
+    }
+
+    get mesh() {
+        return this._mesh;
+    }
+
 }

@@ -103,4 +103,8 @@ export default {
     justify-content: space-between !important;
   }
 }
+
+.v-tabs .v-icon {
+  color: #02c64c !important;
+}
 </style>

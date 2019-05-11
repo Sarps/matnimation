@@ -44,11 +44,13 @@ export default class Base {
     /**
      * 
      * @method add
-     * @param {THREE.Mesh} mesh 
+     * @param {THREE.Mesh | Object3D } mesh
      */
     add(mesh) {
         this.scene.add(mesh);
-        this.model.push(mesh)
+        this.model.push(mesh);
+
+        this.requestAudience();
     }
 
     requestAudience() {

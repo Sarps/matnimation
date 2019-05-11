@@ -40,53 +40,19 @@ export default class CameraControls extends Base {
         this.minZoom = 0;
         this.maxZoom = Infinity;
 
-        // How far you can orbit vertically, upper and lower limits.
-        // Range is 0 to Math.PI radians.
-        this.minPolarAngle = 0; // radians
-        this.maxPolarAngle = Math.PI; // radians
-
-        // How far you can orbit horizontally, upper and lower limits.
-        // If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
-        this.minAzimuthAngle = -Infinity; // radians
-        this.maxAzimuthAngle = Infinity; // radians
-
-        // Set to true to enable damping (inertia)
-        // If damping is enabled, you must call controls.update() in your animation loop
-        this.enableDamping = false;
-        this.dampingFactor = 0.25;
-
         // This option actually enables dollying in and out; left as "zoom" for backwards compatibility.
         // Set to false to disable zooming
-        this.enableZoom = true;
         this.zoomSpeed = 1.0;
 
         // Set to false to disable rotating
-        this.enableRotate = true;
         this.rotateSpeed = 1.0;
 
         // Set to false to disable panning
-        this.enablePan = true;
         this.panSpeed = 1.0;
         this.screenSpacePanning = false; // if true, pan in screen-space
-        this.keyPanSpeed = 7.0; // pixels moved per arrow key push
-
-        // Set to true to automatically rotate around the target
-        // If auto-rotate is enabled, you must call controls.update() in your animation loop
-        this.autoRotate = false;
-        this.autoRotateSpeed = 2.0; // 30 seconds per round when fps is 60
-
-        // Set to false to disable use of the keys
-        this.enableKeys = true;
 
         // The four arrow keys
         this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40 };
-
-        // Mouse buttons
-        this.mouseButtons = {
-            LEFT: THREE.MOUSE.LEFT,
-            MIDDLE: THREE.MOUSE.MIDDLE,
-            RIGHT: THREE.MOUSE.RIGHT
-        };
 
         // for reset
         this.target0 = this.target.clone();
@@ -119,10 +85,6 @@ export default class CameraControls extends Base {
         this.__lastQuaternion = new THREE.Quaternion();
 
         this.__v = new THREE.Vector3();
-    }
-
-    get autoRotationAngle() {
-        return ((2 * Math.PI) / 60 / 60) * this.autoRotateSpeed;
     }
 
     get zoomScale() {
@@ -219,7 +181,6 @@ export default class CameraControls extends Base {
             console.warn(
                 "WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled."
             );
-            this.enableZoom = false;
         }
     }
 
@@ -237,7 +198,6 @@ export default class CameraControls extends Base {
             console.warn(
                 "WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled."
             );
-            this.enableZoom = false;
         }
     }
 
@@ -249,6 +209,24 @@ export default class CameraControls extends Base {
      */
     handleMouseMoveRotate(_, $, event) {
         this.__rotateDelta.set(event.movementX, event.movementY);
+        this.__rotateDelta.multiplyScalar(this.rotateSpeed);
+        this.rotateLeft(
+            (2 * Math.PI * this.__rotateDelta.x) / this.domElement.clientHeight
+        ); // yes, height
+        this.rotateUp(
+            (2 * Math.PI * this.__rotateDelta.y) / this.domElement.clientHeight
+        );
+        this.update();
+    }
+
+    /**
+     *
+     * @param {KeyboardInput} _
+     * @param {MouseInput} $
+     * @param {WheelEvent} event
+     */
+    handleMouseWheelRotate(_, $, event) {
+        this.__rotateDelta.set(event.deltaX, event.deltaY);
         this.__rotateDelta.multiplyScalar(this.rotateSpeed);
         this.rotateLeft(
             (2 * Math.PI * this.__rotateDelta.x) / this.domElement.clientHeight
@@ -294,6 +272,19 @@ export default class CameraControls extends Base {
      * @param {MouseInput} $
      * @param {WheelEvent} event
      */
+    handleMouseWheelPan(_, $, event) {
+        this.__panDelta = new THREE.Vector2(-event.deltaX, -event.deltaY);
+        this.__panDelta.multiplyScalar(this.panSpeed);
+        this.pan(this.__panDelta.x, this.__panDelta.y);
+        this.update();
+    }
+
+    /**
+     *
+     * @param {KeyboardInput} _
+     * @param {MouseInput} $
+     * @param {WheelEvent} event
+     */
     handleMouseWheel(_, $, event) {
         if (event.deltaY < 0) {
             this.dollyOut(this.zoomScale);
@@ -308,22 +299,25 @@ export default class CameraControls extends Base {
      * @param {Viewport} viewport
      */
     captureInputs(viewport) {
-        // Pan events
+        // Rotate Events
         viewport.capture(InputManager.EVENT_TYPE.MOUSE_MOVE, {
             button: InputManager.BUTTON.LEFT,
-            shift: true,
-            fn: this.handleMouseMovePan.bind(this)
+            fn: this.handleMouseMoveRotate.bind(this)
         });
 
+        viewport.capture(InputManager.EVENT_TYPE.MOUSE_WHEEL, {
+            fn: this.handleMouseWheelRotate.bind(this)
+        });
+
+        // Pan events
         viewport.capture(InputManager.EVENT_TYPE.MOUSE_MOVE, {
             button: InputManager.BUTTON.RIGHT,
             fn: this.handleMouseMovePan.bind(this)
         });
 
-        // Rotate Events
-        viewport.capture(InputManager.EVENT_TYPE.MOUSE_MOVE, {
-            button: InputManager.BUTTON.LEFT,
-            fn: this.handleMouseMoveRotate.bind(this)
+        viewport.capture(InputManager.EVENT_TYPE.MOUSE_WHEEL, {
+            shift: true,
+            fn: this.handleMouseWheelPan.bind(this)
         });
 
         // Dolly Events
@@ -333,14 +327,9 @@ export default class CameraControls extends Base {
         });
 
         viewport.capture(InputManager.EVENT_TYPE.MOUSE_WHEEL, {
+            ctrl: true,
             fn: this.handleMouseWheel.bind(this)
         });
-    }
-
-    saveState() {
-        this.target0.copy(this.target);
-        this.position0.copy(this.camera.position);
-        this.zoom0 = this.camera.zoom;
     }
 
     reset() {
@@ -349,34 +338,21 @@ export default class CameraControls extends Base {
         this.camera.zoom = this.zoom0;
 
         this.camera.updateProjectionMatrix();
-        this.dispatchEvent(changeEvent);
 
         this.update();
     }
 
     update() {
-        this.__offset.copy(this.camera.position).sub(this.target);
 
+        this.__offset.copy(this.camera.position).sub(this.target);
         this.__offset.applyQuaternion(this.__quat);
 
         // angle from z-axis around y-axis
         this.__spherical.setFromVector3(this.__offset);
-
         this.__spherical.theta += this.__sphericalDelta.theta;
         this.__spherical.phi += this.__sphericalDelta.phi;
 
-        // restrict angles to be between desired limits
-        this.__spherical.theta = Math.max(
-            this.minAzimuthAngle,
-            Math.min(this.maxAzimuthAngle, this.__spherical.theta)
-        );
-        this.__spherical.phi = Math.max(
-            this.minPolarAngle,
-            Math.min(this.maxPolarAngle, this.__spherical.phi)
-        );
-
         this.__spherical.makeSafe();
-
         this.__spherical.radius *= this.__scale;
 
         // restrict radius to be between desired limits
@@ -389,7 +365,6 @@ export default class CameraControls extends Base {
         this.target.add(this.__panOffset);
 
         this.__offset.setFromSpherical(this.__spherical);
-
         this.__offset.applyQuaternion(this.__quatInverse);
 
         this.camera.position.copy(this.target).add(this.__offset);
@@ -398,16 +373,9 @@ export default class CameraControls extends Base {
 
         this.viewport.requestAudience();
 
-        if (this.enableDamping === true) {
-            this.__sphericalDelta.theta *= 1 - this.dampingFactor;
-            this.__sphericalDelta.phi *= 1 - this.dampingFactor;
 
-            this.__panOffset.multiplyScalar(1 - this.dampingFactor);
-        } else {
-            this.__sphericalDelta.set(0, 0, 0);
-            this.__panOffset.set(0, 0, 0);
-        }
-
+        this.__sphericalDelta.set(0, 0, 0);
+        this.__panOffset.set(0, 0, 0);
         this.__scale = 1;
 
         if (
